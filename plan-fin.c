@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 // leitura do arquivo Meta
 typedef struct {
@@ -29,9 +30,31 @@ typedef struct NodeAplicacoes {
     struct NodeAplicacoes *next;
 } NodeAplicacoes;
 
+//melhor opcao investimento -> capitalizacao
+typedef struct {
+    int periodo; //em meses
+    double pagamento; //valor investido
+    double capitalizado; // total
+    double juros; // taxa de juros
+    char nomeAtivo[100];
+} CapSelecionado;
+
+typedef struct {
+    char nomeAtivo[100];
+    double taxa;
+    double retirada; //mensal
+} OpcoesDescap;
+
+typedef struct NodeOpcoesDescap {
+    OpcoesDescap opcoesDescap;
+    struct NodeOpcoesDescap *next;
+} NodeOpcoesDescap;
+
+
 void ler_arquivo_meta(const char *arquivo_meta, Meta *meta);
 NodeAplicacoes* ler_arquivoCap(const char *arquivoCap);
 NodeAplicacoes* ler_arquivoDescap(const char *arquivoDescap);
+double fDescapitalizacao(int n, double pv, double taxa);
 
 int main(int argc, char **argv) {
 
@@ -244,4 +267,26 @@ NodeAplicacoes* ler_arquivoDescap(const char *arquivoDescap) {
 
     fclose(file);
     return lista;
+}
+
+//funcao de descapitalizacao
+double fDescapitalizacao(int n, double pv, double taxa) {
+    double pmt_ret = 0;
+   // int n = (meta->idadeFimRetirada - meta->idadeFimCapitalizacao) * 12;
+    pmt_ret =  (pv*taxa)/(1 - pow((1+taxa),(-n)));
+    return pmt_ret;
+}
+
+//derivada finita central
+double derivadaDesc(int n, double pv, double taxa) { //     f ′(x) ≈ (f(x+ h)− f(x− h)) / 2h
+    double h = 0.000001; // passo pequeno
+    double fmais, fmenos;
+    double derivada;
+
+
+    fmais = fDescapitalizacao(n,pv,taxa);  // f(i + h) a função depende dos três valores para realizar a conta
+    fmenos = fDescapitalizacao(n,pv,taxa); // f(i - h)
+    derivada = (fmais - fmenos) / (2 * h);
+
+    return derivada;
 }
