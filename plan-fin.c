@@ -2,7 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-
+#define MAX_ITER 100
+#define EPSILON 0.0001
+#define TOLER 0.001
 // leitura do arquivo Meta
 typedef struct {
     // Capitalização
@@ -54,7 +56,12 @@ typedef struct NodeOpcoesDescap {
 void ler_arquivo_meta(const char *arquivo_meta, Meta *meta);
 NodeAplicacoes* ler_arquivoCap(const char *arquivoCap);
 NodeAplicacoes* ler_arquivoDescap(const char *arquivoDescap);
-double fDescapitalizacao(int n, double pv, double taxa);
+
+
+//Funcoes de descapitlizacao
+double fDescapitalizacao(double pmt_ret,int n, double pv, double taxa);
+double derivadaDesc(double pmt_ret, int n, double pv, double taxa);
+double newtonDescapitalizacao(double pmt_ret, int n, double pv, double taxa);
 
 int main(int argc, char **argv) {
 
@@ -75,7 +82,7 @@ int main(int argc, char **argv) {
 
 
     //  LEITURA DOS ARQUIVOS
-    /*
+
     Meta meta = {0};
     ler_arquivo_meta(arqMeta, &meta);
 
@@ -105,7 +112,43 @@ int main(int argc, char **argv) {
         printf("Ativo: %s | Taxa: %.4f | Risco: %d\n", p2->inv.nomeAtivo, p2->inv.taxaRetorno, p2->inv.risco);
         p2 = p2->next;
     }
-*/
+
+    //Capitalizacao
+    CapSelecionado capSelecionado = {0};
+
+    //Descapitalizacao
+    p2 = listaDescap;
+    NodeOpcoesDescap *listaDescapRelatorio = NULL;
+    NodeOpcoesDescap *ultimoDescapRelatorio = NULL;
+
+    while (p2 != NULL) {
+        NodeOpcoesDescap *novo = malloc(sizeof(NodeOpcoesDescap));
+
+        novo->next = NULL;
+
+        novo->opcoesDescap.retirada = newtonDescapitalizacao(1.00,(meta.idadeFimRetirada - meta.idadeFimCapitalizacao)*12, capSelecionado.capitalizado, p2->inv.taxaRetorno);
+        novo->opcoesDescap.taxa = p2->inv.taxaRetorno;
+        strncpy(novo->opcoesDescap.nomeAtivo, p2->inv.nomeAtivo, sizeof(novo->opcoesDescap.nomeAtivo) - 1);
+        //Garante que a string termina com um caractere nulo
+        novo->opcoesDescap.nomeAtivo[sizeof(novo->opcoesDescap.nomeAtivo) - 1] = '\0';
+
+
+        if (listaDescapRelatorio == NULL) {
+            // lista vazia: novo nó é a cabeça
+            listaDescapRelatorio = novo;
+            ultimoDescapRelatorio = novo;
+        } else {
+            // lista não vazia: adiciona no final
+            ultimoDescapRelatorio->next = novo;
+            ultimoDescapRelatorio = novo;
+
+        }
+
+        p2 = p2->next;
+
+    }
+
+
     return 0;
 
   }
@@ -270,23 +313,48 @@ NodeAplicacoes* ler_arquivoDescap(const char *arquivoDescap) {
 }
 
 //funcao de descapitalizacao
-double fDescapitalizacao(int n, double pv, double taxa) {
-    double pmt_ret = 0;
-   // int n = (meta->idadeFimRetirada - meta->idadeFimCapitalizacao) * 12;
-    pmt_ret =  (pv*taxa)/(1 - pow((1+taxa),(-n)));
-    return pmt_ret;
+double fDescapitalizacao(double pmt_ret,int n, double pv, double taxa) {
+    double potencia = pow((1+taxa),(-n));
+    return pmt_ret*(1 - potencia)/taxa - pv;
+
 }
 
 //derivada finita central
-double derivadaDesc(int n, double pv, double taxa) { //     f ′(x) ≈ (f(x+ h)− f(x− h)) / 2h
-    double h = 0.000001; // passo pequeno
+double derivadaDesc(double pmt_ret, int n, double pv, double taxa) { //     f ′(x) ≈ (f(x+ h)− f(x− h)) / 2h
     double fmais, fmenos;
     double derivada;
 
 
-    fmais = fDescapitalizacao(n,pv,taxa);  // f(i + h) a função depende dos três valores para realizar a conta
-    fmenos = fDescapitalizacao(n,pv,taxa); // f(i - h)
-    derivada = (fmais - fmenos) / (2 * h);
+    fmais = fDescapitalizacao(pmt_ret+EPSILON,n,pv,taxa);  // f(i + h) a função depende dos três valores para realizar a conta
+    fmenos = fDescapitalizacao(pmt_ret-EPSILON,n,pv,taxa); // f(i - h)
+    derivada = (fmais - fmenos) / (2 * EPSILON);
 
     return derivada;
+}
+
+double newtonDesc(double pmt_ret, int n, double pv, double taxa) {
+    return pmt_ret;
+}
+
+double newtonDescapitalizacao(double pmt_ret, int n, double pv, double taxa) {
+    int j=0;
+
+    double x = pmt_ret;
+    double Fx= fDescapitalizacao(pmt_ret,n,pv,taxa);
+    double Dx= derivadaDesc(pmt_ret, n,pv,taxa);
+    double deltax;
+
+    while (Dx!=0.0 && j< MAX_ITER) {
+        deltax = -Fx/Dx;
+        x= x+deltax;
+        Fx= fDescapitalizacao(pmt_ret,n,pv,taxa);
+        Dx= derivadaDesc(pmt_ret, n,pv,taxa);
+        j++;
+
+        if(abs((deltax)<=TOLER) && abs(fDescapitalizacao(pmt_ret,n,pv,taxa)<=TOLER)){
+            return (x);
+        }
+    }
+
+    return 0;
 }
