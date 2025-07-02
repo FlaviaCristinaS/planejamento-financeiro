@@ -44,7 +44,7 @@ typedef struct {
 typedef struct {
     char nomeAtivo[100];
     double taxa;
-    double retirada; //mensal
+    double retirada; //PMTret
 } OpcoesDescap;
 
 typedef struct NodeOpcoesDescap {
@@ -52,16 +52,22 @@ typedef struct NodeOpcoesDescap {
     struct NodeOpcoesDescap *next;
 } NodeOpcoesDescap;
 
-
+//Leitura de arquivos
 void ler_arquivo_meta(const char *arquivo_meta, Meta *meta);
 NodeAplicacoes* ler_arquivoCap(const char *arquivoCap);
 NodeAplicacoes* ler_arquivoDescap(const char *arquivoDescap);
 
+//Funcoes de capitalizacao
+double derivadaCapit(double i, double PMT, int n, double FV);
+double fCapitalizacao(double i, double PMT, int n, double FV);
+double newtonCapitalizao(double i, double PMT, int n, double FV);
 
-//Funcoes de descapitlizacao
+//Funcoes de descapitalizacao
 double fDescapitalizacao(double pmt_ret,int n, double pv, double taxa);
 double derivadaDesc(double pmt_ret, int n, double pv, double taxa);
 double newtonDescapitalizacao(double pmt_ret, int n, double pv, double taxa);
+CapSelecionado melhorInvestimento(double taxaEncontrada, NodeAplicacoes *listaCap,Meta meta);
+
 
 int main(int argc, char **argv) {
 
@@ -116,6 +122,14 @@ int main(int argc, char **argv) {
     //Capitalizacao
     CapSelecionado capSelecionado = {0};
 
+    double taxaEncontrada = newtonCapitalizao(1.00,meta.percentualInvestimento*meta.salarioMedioLiquido,(meta.idadeFimCapitalizacao-meta.idadeFormatura)*12,meta.patrimonioAcumulado );
+    if (taxaEncontrada == 0) {
+        printf("\nSaida de relatorio: Nao existe aplicacao...\n");
+    }
+    else {
+        capSelecionado = melhorInvestimento(taxaEncontrada, listaCap, meta);
+    }
+
     //Descapitalizacao
     p2 = listaDescap;
     NodeOpcoesDescap *listaDescapRelatorio = NULL;
@@ -152,6 +166,34 @@ int main(int argc, char **argv) {
     return 0;
 
   }
+
+//melhor investimento -> taxa maior ou igual a taxaEncontrada e menor risco
+CapSelecionado melhorInvestimento(double taxaEncontrada, NodeAplicacoes *listaCap, Meta meta) {
+
+    CapSelecionado melhorOpcao = {0};
+
+    melhorOpcao.periodo = (meta.idadeFimCapitalizacao - meta.idadeFormatura)*12;
+
+    melhorOpcao.pagamento = meta.percentualInvestimento * meta.salarioMedioLiquido;
+
+    int menorRisco = 6;
+    NodeAplicacoes *p = listaCap;
+    while (p  != NULL) {
+        if (p->inv.taxaRetorno >= taxaEncontrada) {
+            if (p->inv.risco < menorRisco) {
+                strncpy( melhorOpcao.nomeAtivo, p->inv.nomeAtivo, sizeof(melhorOpcao.nomeAtivo) - 1);
+                melhorOpcao.nomeAtivo[sizeof(melhorOpcao.nomeAtivo) - 1] = '\0';
+
+
+
+
+            }
+        }
+        p = p->next;
+    }
+
+    return melhorOpcao;
+}
 
 // LEITURA DOS ARQUIVOS
 void ler_arquivo_meta(const char *arquivo_meta, Meta *meta) {
@@ -332,9 +374,6 @@ double derivadaDesc(double pmt_ret, int n, double pv, double taxa) { //     f �
     return derivada;
 }
 
-double newtonDesc(double pmt_ret, int n, double pv, double taxa) {
-    return pmt_ret;
-}
 
 double newtonDescapitalizacao(double pmt_ret, int n, double pv, double taxa) {
     int j=0;
@@ -357,4 +396,58 @@ double newtonDescapitalizacao(double pmt_ret, int n, double pv, double taxa) {
     }
 
     return 0;
+}
+
+double newtonCapitalizao(double i, double PMT, int n, double FV) {
+    int j=0;
+
+    double x = i;
+    double Fx= fCapitalizacao(i, PMT, n, FV);
+    double Dx= derivadaCapit(i, PMT, n, FV);
+    double deltax;
+
+    while (Dx!=0.0 && j< MAX_ITER) {
+        deltax = -Fx/Dx;
+        x= x+deltax;
+        Fx= fCapitalizacao(i, PMT, n, FV);
+        Dx= derivadaCapit(i, PMT, n, FV);
+        j++;
+
+        if(abs((deltax)<=TOLER) && abs(fCapitalizacao(x, PMT, n, FV))<=TOLER){
+            return (x);
+        }
+    }
+
+    return 0;
+}
+
+double fCapitalizacao(double i, double PMT, int n, double FV) {
+    double base;
+    double potencia;
+    double numerador;
+    double divisao;
+    double resultado;
+    double f;
+
+    base = 1 + i;
+    potencia = pow(base, n);      //  f(i) = PMT · ((1 + i)^n − 1) / i − FV
+    numerador = potencia - 1;
+    divisao = numerador / i;
+    resultado = PMT * divisao;
+    f = resultado - FV;
+
+    return f;
+}
+
+double derivadaCapit(double i, double PMT, int n, double FV) { //     f ′(x) ≈ (f(x+ h)− f(x− h)) / 2h
+
+    double fmais, fmenos;
+    double derivada;
+
+
+    fmais = fCapitalizacao(i + EPSILON, PMT, n, FV);  // f(i + h) a função depende dos três valores para realizar a conta
+    fmenos = fCapitalizacao(i - EPSILON, PMT, n, FV); // f(i - h)
+    derivada = (fmais - fmenos) / (2 * EPSILON);
+
+    return derivada;
 }
