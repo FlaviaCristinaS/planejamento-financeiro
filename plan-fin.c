@@ -5,6 +5,7 @@
 #define MAX_ITER 100
 #define EPSILON 0.0001
 #define TOLER 0.001
+#define X0 0.5
 // leitura do arquivo Meta
 typedef struct {
     // Capitalização
@@ -32,10 +33,11 @@ typedef struct NodeAplicacoes {
     struct NodeAplicacoes *next;
 } NodeAplicacoes;
 
+
 //melhor opcao investimento -> capitalizacao
 typedef struct {
     int periodo; //em meses
-    double pagamento; //valor investido
+    double pagamento; //valor investido -> mensalmente
     double capitalizado; // total
     double juros; // taxa de juros
     char nomeAtivo[100];
@@ -68,6 +70,7 @@ double derivadaDesc(double pmt_ret, int n, double pv, double taxa);
 double newtonDescapitalizacao(double pmt_ret, int n, double pv, double taxa);
 CapSelecionado melhorInvestimento(double taxaEncontrada, NodeAplicacoes *listaCap,Meta meta);
 
+void bubbleSort(NodeAplicacoes **inicioLista);
 
 int main(int argc, char **argv) {
 
@@ -122,12 +125,18 @@ int main(int argc, char **argv) {
     //Capitalizacao
     CapSelecionado capSelecionado = {0};
 
-    double taxaEncontrada = newtonCapitalizao(1.00,meta.percentualInvestimento*meta.salarioMedioLiquido,(meta.idadeFimCapitalizacao-meta.idadeFormatura)*12,meta.patrimonioAcumulado );
+    double taxaEncontrada = newtonCapitalizao(X0,meta.percentualInvestimento*meta.salarioMedioLiquido,(meta.idadeFimCapitalizacao-meta.idadeFormatura)*12,meta.patrimonioAcumulado );
     if (taxaEncontrada == 0) {
         printf("\nSaida de relatorio: Nao existe aplicacao...\n");
     }
     else {
+        //ordenar listaCap
+        bubbleSort(&listaCap);
         capSelecionado = melhorInvestimento(taxaEncontrada, listaCap, meta);
+
+        if (capSelecionado.capitalizado == 0 ) {
+            printf("\nSaida de relatorio: Nao existe aplicacao...\n");
+        }
     }
 
     //Descapitalizacao
@@ -140,7 +149,7 @@ int main(int argc, char **argv) {
 
         novo->next = NULL;
 
-        novo->opcoesDescap.retirada = newtonDescapitalizacao(1.00,(meta.idadeFimRetirada - meta.idadeFimCapitalizacao)*12, capSelecionado.capitalizado, p2->inv.taxaRetorno);
+        novo->opcoesDescap.retirada = newtonDescapitalizacao(meta.salarioMedioLiquido,(meta.idadeFimRetirada - meta.idadeFimCapitalizacao)*12, capSelecionado.capitalizado, p2->inv.taxaRetorno);
         novo->opcoesDescap.taxa = p2->inv.taxaRetorno;
         strncpy(novo->opcoesDescap.nomeAtivo, p2->inv.nomeAtivo, sizeof(novo->opcoesDescap.nomeAtivo) - 1);
         //Garante que a string termina com um caractere nulo
@@ -173,20 +182,27 @@ CapSelecionado melhorInvestimento(double taxaEncontrada, NodeAplicacoes *listaCa
     CapSelecionado melhorOpcao = {0};
 
     melhorOpcao.periodo = (meta.idadeFimCapitalizacao - meta.idadeFormatura)*12;
-
     melhorOpcao.pagamento = meta.percentualInvestimento * meta.salarioMedioLiquido;
 
+    //funcao q ordena
     int menorRisco = 6;
+    double melhorTaxa = taxaEncontrada;
+
+
     NodeAplicacoes *p = listaCap;
     while (p  != NULL) {
-        if (p->inv.taxaRetorno >= taxaEncontrada) {
-            if (p->inv.risco < menorRisco) {
+        if (p->inv.taxaRetorno >= melhorTaxa) {
+            if (p->inv.risco <= menorRisco) {
                 strncpy( melhorOpcao.nomeAtivo, p->inv.nomeAtivo, sizeof(melhorOpcao.nomeAtivo) - 1);
                 melhorOpcao.nomeAtivo[sizeof(melhorOpcao.nomeAtivo) - 1] = '\0';
+                melhorOpcao.juros = p->inv.taxaRetorno;
 
+                // total capitalizado
+                //melhorOpcao.capitalizado
+                melhorOpcao.capitalizado = melhorOpcao.pagamento * ( pow((1+melhorOpcao.juros), melhorOpcao.periodo) - 1)/melhorOpcao.juros;
 
-
-
+                melhorTaxa = p->inv.taxaRetorno;
+                menorRisco = p->inv.risco;
             }
         }
         p = p->next;
@@ -450,4 +466,33 @@ double derivadaCapit(double i, double PMT, int n, double FV) { //     f ′(x) �
     derivada = (fmais - fmenos) / (2 * EPSILON);
 
     return derivada;
+}
+
+
+
+// proximoNo= o proximo no da lista
+//  noAtual = Aponta para o nó que está sendo analisado no momento
+// aux = to usando para fazer a troca de valores entre dois nós
+
+void bubbleSort(NodeAplicacoes **inicioLista) {
+    if (*inicioLista == NULL) return;
+
+    int houveTroca; // Um indicador lógico (flag)
+    NodeAplicacoes *limiteOrdenado = NULL;
+
+    do {
+        houveTroca = 0;
+        NodeAplicacoes *noAtual = *inicioLista;
+
+        while (noAtual->next != limiteOrdenado) {
+            if (noAtual->inv.risco > noAtual->next->inv.risco) {
+                int aux = noAtual->inv.risco;
+                noAtual->inv.risco = noAtual->inv.risco;
+                noAtual->next->inv.risco = aux;
+                houveTroca = 1;
+            }
+            noAtual = noAtual->next;
+        }
+        limiteOrdenado = noAtual;
+    } while (houveTroca);
 }
