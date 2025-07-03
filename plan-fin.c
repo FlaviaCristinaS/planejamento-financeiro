@@ -402,11 +402,11 @@ double newtonDescapitalizacao(double pmt_ret, int n, double pv, double taxa) {
     while (Dx!=0.0 && j< MAX_ITER) {
         deltax = -Fx/Dx;
         x= x+deltax;
-        Fx= fDescapitalizacao(pmt_ret,n,pv,taxa);
-        Dx= derivadaDesc(pmt_ret, n,pv,taxa);
+        Fx= fDescapitalizacao(x,n,pv,taxa);
+        Dx= derivadaDesc(x, n,pv,taxa);
         j++;
 
-        if(abs((deltax)<=TOLER) && abs(fDescapitalizacao(pmt_ret,n,pv,taxa)<=TOLER)){
+        if(fabs((deltax)<=TOLER) && fabs(Fx<=TOLER)){
             return (x);
         }
     }
@@ -425,11 +425,11 @@ double newtonCapitalizao(double i, double PMT, int n, double FV) {
     while (Dx!=0.0 && j< MAX_ITER) {
         deltax = -Fx/Dx;
         x= x+deltax;
-        Fx= fCapitalizacao(i, PMT, n, FV);
-        Dx= derivadaCapit(i, PMT, n, FV);
+        Fx= fCapitalizacao(x, PMT, n, FV);
+        Dx= derivadaCapit(x, PMT, n, FV);
         j++;
 
-        if(abs((deltax)<=TOLER) && abs(fCapitalizacao(x, PMT, n, FV))<=TOLER){
+        if(fabs((deltax)<=TOLER) && fabs(Fx)<=TOLER){
             return (x);
         }
     }
@@ -486,9 +486,9 @@ void bubbleSort(NodeAplicacoes **inicioLista) {
 
         while (noAtual->next != limiteOrdenado) {
             if (noAtual->inv.risco > noAtual->next->inv.risco) {
-                int aux = noAtual->inv.risco;
-                noAtual->inv.risco = noAtual->inv.risco;
-                noAtual->next->inv.risco = aux;
+                Aplicacoes temp = noAtual->inv; // Usa uma struct temporária
+                noAtual->inv = noAtual->next->inv;
+                noAtual->next->inv = temp;
                 houveTroca = 1;
             }
             noAtual = noAtual->next;
