@@ -7,7 +7,7 @@ c IDADEFIMCAP 22
 c SALARIOMEDIOLIQ 1200
 # Aplica 10% todo mês
 c PERCINVESTIMENTO 0.10
-# Meta de patrimônio acumulado de pelo menos 12000 BRL
+# Meta de patrimônio acumulado de pelo menos 4000 BRL
 c PATRIMONIOACC 4000
 # Retirada ao longo de 1 ano (idade 23)
 d IDADEFIMRETIRADA 23
