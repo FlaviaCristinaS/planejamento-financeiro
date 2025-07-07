@@ -520,17 +520,17 @@ void bubbleSort(NodeAplicacoes **inicioLista) {
 int escrever_relatorio_capitalizacao(FILE *fp,Meta meta,double taxa_calculada,CapSelecionado capSel) {
     fprintf(fp, "ETAPA: CAPITALIZAÇÃO\n");
 
-    // Não há aplicação suficiente
+    // nao ha aplicacao suficiente
     if (capSel.capitalizado <= 0.0 || strlen(capSel.nomeAtivo) == 0) {
         fprintf(fp,
             "Não existe aplicação de capitalização capaz de obter o valor de '%.2f' "
             "com a taxa '%.5f'.\n",
             meta.patrimonioAcumulado,
             taxa_calculada);
-        return 0;  // encerra o relatório aqui
+        return 0;  // encerra o relatorio aqui
     }
 
-    // Caso viável, imprime resumo final
+    // Caso viavel, imprime resumo final
     fprintf(fp,
         "O valor total obtido ao final de '%d' meses, com pagamentos de '%.2f' reais "
         "aplicados em '%s' a uma taxa de juros de '%.5f' será de '%.2f' reais:\n",
@@ -540,11 +540,11 @@ int escrever_relatorio_capitalizacao(FILE *fp,Meta meta,double taxa_calculada,Ca
         capSel.juros,
         capSel.capitalizado);
 
-    // Cabeçalho da tabela
+    // Cabecalho da tabela
     fprintf(fp, "Periodo Pagamento Capitalizado Juros\n");
     fprintf(fp, "====== ========= =========== =====\n");
 
-    // Detalha período a período
+    // Detalha periodo a periodo
     for (int k = 1; k <= capSel.periodo; ++k) {
         double pag_acum    = capSel.pagamento * k;
         double fv          = capSel.pagamento * (pow(1 + capSel.juros, k) - 1) / capSel.juros;
@@ -553,8 +553,8 @@ int escrever_relatorio_capitalizacao(FILE *fp,Meta meta,double taxa_calculada,Ca
                 k, pag_acum, fv, juros_acum);
     }
 
-    fprintf(fp, "\n");  // linha em branco antes da próxima seção
-    return 1;  // continuar para descapitalização
+    fprintf(fp, "\n");  // linha em branco antes da proxima secao
+    return 1;  // continuar para descapitalizacao
 }
 
 void escrever_relatorio_descapitalizacao(FILE *fp,Meta meta,CapSelecionado capSel,NodeOpcoesDescap *listaDescap) {
@@ -580,5 +580,5 @@ void escrever_relatorio_descapitalizacao(FILE *fp,Meta meta,CapSelecionado capSe
             p->opcoesDescap.retirada);
     }
 
-    fprintf(fp, "\n");  // fim do relatório
+    fprintf(fp, "\n");  // fim do relatorio
 }
