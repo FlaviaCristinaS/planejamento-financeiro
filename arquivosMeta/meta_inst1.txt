@@ -1,0 +1,13 @@
+# Parâmetros para teste
+# Início da faculdade em 2025, graduado em 2029, idade inicial 18 anos
+c IDADEFORMATURA 18
+# Fim da fase de capitalização aos 22 anos (4 anos de investimento)
+c IDADEFIMCAP 22
+# Salário mensal de 1200 BRL
+c SALARIOMEDIOLIQ 1200
+# Aplica 10% todo mês
+c PERCINVESTIMENTO 0.10
+# Meta de patrimônio acumulado de pelo menos 12000 BRL
+c PATRIMONIOACC 4000
+# Retirada ao longo de 1 ano (idade 23)
+d IDADEFIMRETIRADA 23

@@ -1,0 +1,1 @@
+/usr/bin/cc -Wl,--dependency-file=CMakeFiles/planejamento-financeiro.dir/link.d "CMakeFiles/planejamento-financeiro.dir/plan-fin.c.o" -o planejamento-financeiro  -lm

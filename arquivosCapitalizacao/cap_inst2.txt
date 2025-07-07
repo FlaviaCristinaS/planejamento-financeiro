@@ -1,0 +1,25 @@
+# ####################################################### 
+# 
+# 	Investimentos para capitalização 
+#
+# #######################################################
+
+i CDBBancoBrasil		RendaFixa		0,009		1
+i Poupança			RendaFixa		0,0067 	1
+i TesouroSelic			RendaFixa		0,0117		1
+i TesouroSelic2027 		RendaFixa 		0.008 		1
+i CDBPagBank		RendaFixa		0,009		2
+i PrevidenciaVGBL 		PrevidenciaPrivada 	0.0055 	2
+i PrevidenciaPGBL		PrevidenciaPrivada 	0.0060 	2
+i LCIBancoInter		Renda Fixa		0,0088		2
+i FundoInvestimentoVGIR11	RendaVariavel		0,0093		3
+i ETFBova11			RendaVariavel		0,009		3
+i FundoImobiliarioHGLG11	RendaVariavel		0,0061		3
+i AcoesBBD4			RendaVariavel		0,033		4
+i AcoesITSA4			RendaVariavel		0,0203		4
+i AcoesCMIG4			RendaVariavel		0,0196		4
+i AcoesPetrobras 		RendaVariavel 	0.0095 	4 
+i Bitcoin			RendaVariavel		0,056		5
+i CriptomoedaTron		RendaVariavel		0,070		5
+i CriptomoedaCardano	RendaVariavel		0,0428		5
+f

@@ -70,6 +70,13 @@ double derivadaDesc(double pmt_ret, int n, double pv, double taxa);
 double newtonDescapitalizacao(double pmt_ret, int n, double pv, double taxa);
 CapSelecionado melhorInvestimento(double taxaEncontrada, NodeAplicacoes *listaCap,Meta meta);
 
+//Funcoes de relatorio de saida
+//Retorna 1 se deve continuar para a descapitalizacao ou 0 se o relatorio
+//ja encerrou na etapa de capitalizacao.
+int escrever_relatorio_capitalizacao(FILE *fp,Meta meta,double taxa_calculada,CapSelecionado capSel);
+void escrever_relatorio_descapitalizacao(FILE *fp,Meta meta,CapSelecionado capSel,NodeOpcoesDescap *listaDescap);
+
+
 void bubbleSort(NodeAplicacoes **inicioLista);
 
 int main(int argc, char **argv) {
@@ -171,9 +178,24 @@ int main(int argc, char **argv) {
 
     }
 
+    FILE *fp = fopen(arqRelatorio, "w");
+    if (!fp)
+    {
+        perror("Erro ao criar relatório");
+        exit(1);
+    }
+
+    // 1) secao de capitalizacao
+    int viavel = escrever_relatorio_capitalizacao(fp, meta, taxaEncontrada, capSelecionado);
+
+    // 2) somente se for viavel prosseguir para descapitalizacao
+    if (viavel) {
+        escrever_relatorio_descapitalizacao(fp, meta, capSelecionado, listaDescapRelatorio);
+    }
+
+    fclose(fp);
 
     return 0;
-
   }
 
 //melhor investimento -> taxa maior ou igual a taxaEncontrada e menor risco
@@ -390,7 +412,6 @@ double derivadaDesc(double pmt_ret, int n, double pv, double taxa) { //     f �
     return derivada;
 }
 
-
 double newtonDescapitalizacao(double pmt_ret, int n, double pv, double taxa) {
     int j=0;
 
@@ -468,8 +489,6 @@ double derivadaCapit(double i, double PMT, int n, double FV) { //     f ′(x) �
     return derivada;
 }
 
-
-
 // proximoNo= o proximo no da lista
 //  noAtual = Aponta para o nó que está sendo analisado no momento
 // aux = to usando para fazer a troca de valores entre dois nós
@@ -495,4 +514,71 @@ void bubbleSort(NodeAplicacoes **inicioLista) {
         }
         limiteOrdenado = noAtual;
     } while (houveTroca);
+}
+
+//Funcoes do relatorio de saida
+int escrever_relatorio_capitalizacao(FILE *fp,Meta meta,double taxa_calculada,CapSelecionado capSel) {
+    fprintf(fp, "ETAPA: CAPITALIZAÇÃO\n");
+
+    // Não há aplicação suficiente
+    if (capSel.capitalizado <= 0.0 || strlen(capSel.nomeAtivo) == 0) {
+        fprintf(fp,
+            "Não existe aplicação de capitalização capaz de obter o valor de '%.2f' "
+            "com a taxa '%.5f'.\n",
+            meta.patrimonioAcumulado,
+            taxa_calculada);
+        return 0;  // encerra o relatório aqui
+    }
+
+    // Caso viável, imprime resumo final
+    fprintf(fp,
+        "O valor total obtido ao final de '%d' meses, com pagamentos de '%.2f' reais "
+        "aplicados em '%s' a uma taxa de juros de '%.5f' será de '%.2f' reais:\n",
+        capSel.periodo,
+        capSel.pagamento,
+        capSel.nomeAtivo,
+        capSel.juros,
+        capSel.capitalizado);
+
+    // Cabeçalho da tabela
+    fprintf(fp, "Periodo Pagamento Capitalizado Juros\n");
+    fprintf(fp, "====== ========= =========== =====\n");
+
+    // Detalha período a período
+    for (int k = 1; k <= capSel.periodo; ++k) {
+        double pag_acum    = capSel.pagamento * k;
+        double fv          = capSel.pagamento * (pow(1 + capSel.juros, k) - 1) / capSel.juros;
+        double juros_acum  = fv - pag_acum;
+        fprintf(fp, "%6d %9.2f %10.2f %6.2f\n",
+                k, pag_acum, fv, juros_acum);
+    }
+
+    fprintf(fp, "\n");  // linha em branco antes da próxima seção
+    return 1;  // continuar para descapitalização
+}
+
+void escrever_relatorio_descapitalizacao(FILE *fp,Meta meta,CapSelecionado capSel,NodeOpcoesDescap *listaDescap) {
+    int num_periodos = (meta.idadeFimRetirada - meta.idadeFimCapitalizacao) * 12;
+
+    fprintf(fp, "ETAPA: DESCAPITALIZAÇÃO\n");
+    fprintf(fp,
+        "O patrimônio acumulado de '%.2f' será consumido ao longo de '%d' meses.\n"
+        "As retiradas mensais possíveis são:\n",
+        capSel.capitalizado,
+        num_periodos);
+
+    fprintf(fp, "No. Aplicacao Taxa    Retirada\n");
+    fprintf(fp, "== ============= ======= ==========\n");
+
+    int idx = 1;
+    for (NodeOpcoesDescap *p = listaDescap; p != NULL; p = p->next, ++idx) {
+        fprintf(fp,
+            "%2d %-12s %6.2f %10.2f\n",
+            idx,
+            p->opcoesDescap.nomeAtivo,
+            p->opcoesDescap.taxa,
+            p->opcoesDescap.retirada);
+    }
+
+    fprintf(fp, "\n");  // fim do relatório
 }

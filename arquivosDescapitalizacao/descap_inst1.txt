@@ -1,0 +1,3 @@
+# Investimentos para descapitalização
+i TestInvest RendaFixa 0.0008333 1
+f

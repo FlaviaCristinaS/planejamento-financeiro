@@ -1,0 +1,3 @@
+/home/user2041/Documents/planejamento-financeiro/build/CMakeFiles/planejamento-financeiro.dir
+/home/user2041/Documents/planejamento-financeiro/build/CMakeFiles/edit_cache.dir
+/home/user2041/Documents/planejamento-financeiro/build/CMakeFiles/rebuild_cache.dir

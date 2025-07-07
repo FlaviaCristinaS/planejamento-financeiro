@@ -1,0 +1,2 @@
+echo "../arquivosMeta/meta_inst1.txt ../arquivosCapitalizacao/cap_inst1.txt ../arquivosDescapitalizacao/descap_inst1.txt ../relatorio.txt" | ./planejamento-financeiro
+
