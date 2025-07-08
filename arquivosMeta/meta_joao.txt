@@ -1,0 +1,33 @@
+# ##############################################################################
+#
+# Joao Vitor Fonseca
+#
+# ##############################################################################
+
+# Pretendo me formar em 2028, tenho 22 anos de idade
+c IDADEFORMATURA 25
+
+# Pretendo começar a retirar os valores acumulados com 45 anos
+c IDADEFIMCAP 45
+
+# Salario minimo como professor universitario
+# de acordo com o site https://www.glassdoor.com.br/Sal%C3%A1rios/professor-universitario-sal%C3%A1rio-SRCH_KO0,23.htm
+c SALARIOMEDIOLIQ 4000
+
+# Percentual que pretendo destinar como aporte do salário líquido para a
+# construção de patrimônio durante a fase de capitalização: 30%
+c PERCINVESTIMENTO 0.3
+
+# Valor do patrimônio que pretendo acumular ao final de (45-25)*12 meses de
+# investimento: R$ 800.000,00
+c PATRIMONIOACC 800000
+
+# ##############################################################################
+#
+# Parâmetros para o período de descapitalização
+#
+# ##############################################################################
+
+# Até que idade quero consumir os R$ 800.000,00 acumulados como patrimônio
+# recebendo-o como renda extra: 90 anos
+d IDADEFIMRETIRADA 90
