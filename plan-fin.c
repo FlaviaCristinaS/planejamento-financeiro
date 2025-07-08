@@ -2,10 +2,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#define MAX_ITER 100
+#define MAX_ITER 1000
 #define EPSILON 0.0001
 #define TOLER 0.001
-#define X0 0.5
+#define X0 0.05
 // leitura do arquivo Meta
 typedef struct {
     // Capitalização
@@ -133,6 +133,8 @@ int main(int argc, char **argv) {
     CapSelecionado capSelecionado = {0};
 
     double taxaEncontrada = newtonCapitalizao(X0,meta.percentualInvestimento*meta.salarioMedioLiquido,(meta.idadeFimCapitalizacao-meta.idadeFormatura)*12,meta.patrimonioAcumulado );
+
+
     if (taxaEncontrada == 0) {
         printf("\nSaida de relatorio: Nao existe aplicacao...\n");
     }
@@ -443,7 +445,10 @@ double newtonCapitalizao(double i, double PMT, int n, double FV) {
     double Dx= derivadaCapit(i, PMT, n, FV);
     double deltax;
 
+
+
     while (Dx!=0.0 && j< MAX_ITER) {
+
         deltax = -Fx/Dx;
         x= x+deltax;
         Fx= fCapitalizacao(x, PMT, n, FV);
@@ -567,13 +572,13 @@ void escrever_relatorio_descapitalizacao(FILE *fp,Meta meta,CapSelecionado capSe
         capSel.capitalizado,
         num_periodos);
 
-    fprintf(fp, "No. Aplicacao Taxa    Retirada\n");
-    fprintf(fp, "== ============= ======= ==========\n");
+    fprintf(fp, "No.Aplicacao       Taxa    Retirada\n");
+    fprintf(fp, "== ==============  ======= ==========\n");
 
     int idx = 1;
     for (NodeOpcoesDescap *p = listaDescap; p != NULL; p = p->next, ++idx) {
         fprintf(fp,
-            "%2d %-12s %6.2f %10.2f\n",
+            "%2d %-12s %6.4f %10.2f\n",
             idx,
             p->opcoesDescap.nomeAtivo,
             p->opcoesDescap.taxa,
