@@ -1,0 +1,36 @@
+# ##############################################################################
+#
+# Kauany Sebastiana Arantes
+#
+# ##############################################################################
+#
+# Parâmetros para o período de capitalização
+#
+# ##############################################################################
+# Pretendo me formar em 2028, com 23 anos de idade, pois estou no 3o. período.
+c IDADEFORMATURA 23
+# Pretendo começar a retirar os valores acumulados com 47 anos
+c IDADEFIMCAP 47
+# Segundo levantamento feito no site salario.com.br, o valor esperado de salário
+# para trabalhar com pesquisa em ciência da computação e informática (minha projeção de salário médio
+# desde o dia em que começo a trabalhar como jr. até atingir a senioridade do
+# cargo): https://www.salario.com.br/profissao/pesquisador-em-ciencias-da-computacao-e-informatica-cbo-203105/
+c SALARIOMEDIOLIQ 9928.74
+# Percentual que pretendo destinar como aporte do salário líquido para a
+# construção de patrimônio durante a fase de capitalização: 20%
+c PERCINVESTIMENTO 0.20
+# Valor do patrimônio que pretendo acumular ao final de (47-23)*12 meses de
+# investimento: R$ 1.000.000,00
+c PATRIMONIOACC 1000000
+# ##############################################################################
+#
+# Parâmetros para o período de descapitalização
+#
+# ##############################################################################
+# Até que idade quero consumir os R$ 1.000.000,00 acumulados como patrimônio
+# recebendo-o como renda extra: 80 anos (ou seja, durante 33 anos)
+d IDADEFIMRETIRADA 80
+# Considerei a média salarial prevista no site, porém sei que a estimativa é volátil
+# ainda mais porque espero continuar meus estudos após a graduação. Apesar de muito incerto
+# acredito que consegui ter uma visão um pouco mais direcionada do meu futuro.
+# Além disso, também espero ter meu próprio negócio em algum momento.
